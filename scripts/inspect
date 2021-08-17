@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+if [[ $# -ne 2 ]]; then
+    exit 1
+fi
+
+binPath=$1
+libPath=$2
+
+if [[ "$OSTYPE" == linux-gnu* ]]; then
+    inspect_deps() {
+        echo "$ readelf -d $1"
+        readelf -d "$1" | grep -E 'NEEDED|RPATH|RUNPATH'
+    }
+
+    inspect_deps "${binPath}"
+    echo
+    inspect_deps "${libPath}"
+
+elif [[ "$OSTYPE" == darwin* ]]; then
+    inspect_deps() {
+        echo "$ otool -L $1"
+        otool -L "$1"
+        echo
+        echo "$ otool -l $1 | grep -A2 LC_RPATH"
+        otool -l "$1" | grep -A2 LC_RPATH
+    }
+
+    inspect_deps "${binPath}"
+    echo
+    echo "$ otool -D ${libPath}"
+    otool -D "${libPath}"
+    echo
+    inspect_deps "${libPath}"
+
+else
+    echo "Unsupported system"
+    exit 1
+fi

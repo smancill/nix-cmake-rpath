@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+build() {
+    echo "$ nix-build --arg defineInstallRpath $1 --arg skipBuildRpath $2 --arg skipInstallRpath $3"
+    nix-build --arg defineInstallRpath "$1" --arg skipBuildRpath "$2" --arg skipInstallRpath "$3"
+}
+
+not_op() {
+    if [[ "$1" == true ]]; then
+        echo "false"
+    else
+        echo "true"
+    fi
+}
+
+to_part() {
+    if [[ "$2" == true ]]; then
+        echo "with-$1"
+    else
+        echo "skip-$1"
+    fi
+}
+
+check() {
+    local define_install_rpath=$1 skip_build_rpath=$2 skip_install_rpath=$3
+    local define_part build_part install_part out
+
+    set -e
+
+    define_part=$(to_part "defined-rpath" "${define_install_rpath}")
+    build_part=$(to_part "build-rpath" "$(not_op "${skip_build_rpath}")")
+    install_part=$(to_part "install-rpath" "$(not_op "${skip_install_rpath}")")
+
+    out="out/cmake.${define_part}.${build_part}.${install_part}.logs"
+    mkdir -p "${out}"
+
+    {
+        echo "DEFINE_INSTALL_RPATH=$define_install_rpath  SKIP_BUILD_RPATH=$skip_build_rpath  SKIP_INSTALL_RPATH=$skip_install_rpath"
+        build "${define_install_rpath}" "${skip_build_rpath}" "${skip_install_rpath}" 2>&1
+        cp -r ./result "${out}"
+    } | tee "${out}/build.log"
+
+    echo
+    echo
+    set +e
+}
+
+check true true false    # default
+
+check true false false   # proposed PR
+check true false true
+
+check false false false
+check false false true
