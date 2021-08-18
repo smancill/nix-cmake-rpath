@@ -2,6 +2,7 @@
 , defineInstallRpath ? true
 , skipBuildRpath ? false
 , skipInstallRpath ? false
+, multipleOutputs ? true
 }:
 
 let
@@ -29,6 +30,8 @@ with pkgs; stdenv.mkDerivation rec {
     patterns = [ "/check" ];
   };
 
+  outputs = [ "out" ] ++ lib.optionals multipleOutputs [ "lib" "dev" ];
+
   nativeBuildInputs = [ cmake ];
 
   buildInputs = [ jsoncpp ];
@@ -55,7 +58,8 @@ with pkgs; stdenv.mkDerivation rec {
 
   installCheckPhase = let
     binPath = "$out/bin/hello";
-    libPath = "$out/lib/libhello${libExt}";
+    libDir = if multipleOutputs then "$lib" else "$out";
+    libPath = "${libDir}/lib/libhello${libExt}";
   in ''
     runHook preInstallCheck
     echo "##### BEGIN INSTALL TREE INSPECT"
