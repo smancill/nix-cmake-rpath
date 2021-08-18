@@ -53,12 +53,16 @@ add_library(hello_lib src/hello_lib.cpp)
 set_target_properties(hello_lib PROPERTIES OUTPUT_NAME hello)
 target_link_libraries(hello_lib PRIVATE jsoncpp_lib)
 target_include_directories(hello_lib PUBLIC
-  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>)
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 install(TARGETS hello_lib
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+install(FILES ${PROJECT_SOURCE_DIR}/src/hello_lib.hpp
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/hello
 )
 
 add_executable(hello src/hello.cpp)
