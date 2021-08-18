@@ -63,8 +63,8 @@ with pkgs; stdenv.mkDerivation rec {
   in ''
     runHook preInstallCheck
     echo "##### BEGIN INSTALL TREE INSPECT"
-    echo "$ $out/bin/hello"
-    $out/bin/hello
+    echo "$ ${binPath}"
+    ${binPath}
     echo
     bash ../scripts/inspect ${binPath} ${libPath}
     echo "##### END INSTALL TREE INSPECT"
